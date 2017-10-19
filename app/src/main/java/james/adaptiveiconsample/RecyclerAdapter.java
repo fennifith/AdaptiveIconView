@@ -7,14 +7,25 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
+import james.adaptiveicon.AdaptiveIcon;
 import james.adaptiveicon.AdaptiveIconView;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
-    private List<IconItem> icons;
+    private List<AdaptiveIcon> icons;
+    private int path = AdaptiveIconView.PATH_CIRCLE;
 
-    public RecyclerAdapter(List<IconItem> icons) {
+    public RecyclerAdapter(List<AdaptiveIcon> icons) {
         this.icons = icons;
+    }
+
+    public void setPath(int path) {
+        this.path = path;
+        notifyDataSetChanged();
+    }
+
+    public int getPathShape() {
+        return path;
     }
 
     @Override
@@ -24,9 +35,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        IconItem icon = icons.get(position);
-        holder.iconView.setDrawable(icon.bgDrawable, icon.fgDrawable);
-        holder.iconView.setAdaptive(icon.fgDrawable != null);
+        AdaptiveIcon icon = icons.get(position);
+        holder.iconView.setIcon(icon);
+        holder.iconView.setPath(path);
     }
 
     @Override

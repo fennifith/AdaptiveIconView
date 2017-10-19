@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AdaptiveIconView</string>
+    <string name="title_path_shape">Path Shape</string>
 </resources>

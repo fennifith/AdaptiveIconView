@@ -1,4 +1,4 @@
-package james.adaptiveicon;
+package james.adaptiveicon.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

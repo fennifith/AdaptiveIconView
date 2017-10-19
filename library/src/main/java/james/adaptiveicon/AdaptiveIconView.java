@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -21,13 +20,17 @@ import android.view.animation.DecelerateInterpolator;
 
 import java.lang.ref.WeakReference;
 
+import james.adaptiveicon.utils.PathUtils;
+
 public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalLayoutListener, View.OnTouchListener {
 
     public static final int PATH_CIRCLE = 0;
-    public static final int PATH_SQUARE = 1;
-    public static final int PATH_SQUIRCLE = 2;
+    public static final int PATH_SQUIRCLE = 1;
+    public static final int PATH_ROUNDED_SQUARE = 2;
+    public static final int PATH_SQUARE = 3;
+    public static final int PATH_TEARDROP = 4;
 
-    private Bitmap bgBitmap, fgBitmap;
+    private AdaptiveIcon icon;
     private Path path;
     private Rect pathSize;
 
@@ -75,35 +78,15 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
         setOnTouchListener(this);
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        setBitmap(bitmap, null);
-    }
-
-    public void setBitmap(Bitmap bgBitmap, Bitmap fgBitmap) {
-        this.bgBitmap = bgBitmap;
-        this.fgBitmap = fgBitmap;
-        scaledBgBitmap = null;
+    public void setIcon(AdaptiveIcon icon) {
+        this.icon = icon;
         scaledFgBitmap = null;
+        scaledBgBitmap = null;
         invalidate();
     }
 
-    public void setDrawable(Drawable drawable) {
-        setBitmap(ImageUtils.drawableToBitmap(drawable), null);
-    }
-
-    public void setDrawable(Drawable bgDrawable, Drawable fgDrawable) {
-        setBitmap(
-                ImageUtils.drawableToBitmap(bgDrawable),
-                ImageUtils.drawableToBitmap(fgDrawable)
-        );
-    }
-
-    public Bitmap getBgBitmap() {
-        return bgBitmap;
-    }
-
-    public Bitmap getFgBitmap() {
-        return fgBitmap;
+    public AdaptiveIcon getIcon() {
+        return icon;
     }
 
     public void setPath(Rect size, Path path) {
@@ -121,13 +104,30 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
                 path.arcTo(new RectF(pathSize), 0, 359);
                 path.close();
                 break;
-            case PATH_SQUARE:
-                break;
             case PATH_SQUIRCLE:
+                setPath("M 50,0 C 10,0 0,10 0,50 C 0,90 10,100 50,100 C 90,100 100,90 100,50 C 100,10 90,0 50,0 Z");
+                break;
+            case PATH_ROUNDED_SQUARE:
+                setPath("M 50,0 L 70,0 A 30,30,0,0 1 100,30 L 100,70 A 30,30,0,0 1 70,100 L 30,100 A 30,30,0,0 1 0,70 L 0,30 A 30,30,0,0 1 30,0 z");
+                break;
+            case PATH_SQUARE:
+                path.lineTo(0, 50);
+                path.lineTo(50, 50);
+                path.lineTo(50, 0);
+                path.lineTo(0, 0);
+                path.close();
+                break;
+            case PATH_TEARDROP:
+                setPath("M 50,0 A 50,50,0,0 1 100,50 L 100,85 A 15,15,0,0 1 85,100 L 50,100 A 50,50,0,0 1 50,0 z");
                 break;
         }
 
         invalidate();
+    }
+
+    public void setPath(String pathData) {
+        path = PathUtils.createPathFromPathData(pathData);
+        pathSize = new Rect(0, 0, 100, 100);
     }
 
     public Path getPath() {
@@ -144,11 +144,11 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
     }
 
     private boolean isPrepared() {
-        return bgBitmap != null && path != null && pathSize != null;
+        return icon != null && path != null && pathSize != null;
     }
 
     private boolean isScaled(int width, int height) {
-        return scaledBgBitmap != null && (fgBitmap == null || scaledFgBitmap != null) && scaledPath != null && this.width == width && this.height == height;
+        return scaledBgBitmap != null && (icon.getFgBitmap() == null || scaledFgBitmap != null) && scaledPath != null && this.width == width && this.height == height;
     }
 
     private Path getScaledPath(Path origPath, Rect origRect, int width, int height) {
@@ -194,9 +194,9 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
                 width = canvas.getWidth();
                 height = canvas.getHeight();
                 scaledPath = getScaledPath(path, pathSize, width, height);
-                scaledBgBitmap = getScaledBitmap(bgBitmap, width, height);
-                if (fgBitmap != null)
-                    scaledFgBitmap = getScaledBitmap(fgBitmap, width, height);
+                scaledBgBitmap = getScaledBitmap(icon.getBgBitmap(), width, height);
+                if (icon.getFgBitmap() != null)
+                    scaledFgBitmap = getScaledBitmap(icon.getFgBitmap(), width, height);
             }
 
             if (isAdaptive) {
@@ -206,8 +206,8 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
                     canvas.drawBitmap(scaledBgBitmap, getBgMatrix(scaledBgBitmap.getWidth(), scaledBgBitmap.getHeight()), paint);
                 if (scaledFgBitmap != null)
                     canvas.drawBitmap(scaledFgBitmap, getFgMatrix(scaledFgBitmap.getWidth(), scaledFgBitmap.getHeight()), paint);
-            } else if (bgBitmap != null) {
-                canvas.drawBitmap(ThumbnailUtils.extractThumbnail(bgBitmap, width, height), 0, 0, paint);
+            } else if (icon.getBgBitmap() != null) {
+                canvas.drawBitmap(ThumbnailUtils.extractThumbnail(icon.getBgBitmap(), width, height), 0, 0, paint);
             }
         }
     }
@@ -225,22 +225,6 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
     public boolean onTouch(View view, MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (animator != null && animator.isStarted())
-                    animator.cancel();
-
-                animator = ValueAnimator.ofFloat(fgScale, 1.2f);
-                animator.setInterpolator(new DecelerateInterpolator());
-                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                        float value = (float) valueAnimator.getAnimatedValue();
-                        bgScale = ((value - 1) / 2) + 1;
-                        fgScale = value;
-                        invalidate();
-                    }
-                });
-                animator.start();
-
                 startMoveX = event.getX();
                 startMoveY = event.getY();
                 break;
@@ -255,7 +239,8 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
                 if (animator != null && animator.isStarted())
                     animator.cancel();
 
-                animator = ValueAnimator.ofFloat(fgScale, 1);
+                animator = ValueAnimator.ofFloat(fgScale, 1.2f, 1);
+                animator.setDuration(500);
                 animator.setInterpolator(new DecelerateInterpolator());
                 animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
