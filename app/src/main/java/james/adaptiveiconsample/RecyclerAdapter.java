@@ -47,7 +47,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        private AdaptiveIconView iconView;
+        public AdaptiveIconView iconView;
 
         public ViewHolder(View itemView) {
             super(itemView);

@@ -15,14 +15,11 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
-
-import java.lang.ref.WeakReference;
 
 import james.adaptiveicon.utils.PathUtils;
 
-public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalLayoutListener, View.OnTouchListener {
+public class AdaptiveIconView extends View implements View.OnTouchListener {
 
     public static final int PATH_CIRCLE = 0;
     public static final int PATH_SQUIRCLE = 1;
@@ -38,16 +35,13 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
     private Path scaledPath;
 
     private int width, height;
-    private float x, y;
-    private boolean hasChanged;
 
-    private float bgScale, fgScale;
-    private float bgOffsetX, bgOffsetY;
+    private float bgScale = 1, fgScale = 1;
     private float fgOffsetX, fgOffsetY;
+    private ValueAnimator offsetXAnimator, offsetYAnimator;
 
     private Paint paint;
 
-    private UpdateThread thread;
     private ValueAnimator animator;
 
     public AdaptiveIconView(Context context) {
@@ -64,15 +58,7 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
         paint.setAntiAlias(true);
         paint.setColor(Color.LTGRAY);
 
-        thread = new UpdateThread(this);
-        thread.start();
-
-        getViewTreeObserver().addOnGlobalLayoutListener(this);
         setPath(PATH_CIRCLE);
-
-        bgScale = 1;
-        fgScale = 1;
-
         setOnTouchListener(this);
     }
 
@@ -168,6 +154,16 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
         return path;
     }
 
+    /**
+     * Call this method to animate icon movements.
+     *
+     * @param movementX the amount to move the icon (reversed) horizontally, between 0 and 1
+     * @param movementY the amount to move the icon (reversed) vertically, between 0 and 1
+     */
+    public void onMovement(float movementX, float movementY) {
+        //TODO: come up with some weird logic for this
+    }
+
     private boolean isPrepared() {
         return icon != null && path != null && pathSize != null;
     }
@@ -227,6 +223,7 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
     private Matrix getFgMatrix(int width, int height) {
         Matrix matrix = new Matrix();
         matrix.postScale(fgScale, fgScale, ((float) width / 2), ((float) height / 2));
+        matrix.postTranslate(fgOffsetX * width * 0.333f, fgOffsetY * height * 0.333f);
         return matrix;
     }
 
@@ -257,28 +254,8 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
     }
 
     @Override
-    public void onGlobalLayout() {
-        float x = getX();
-        float y = getY();
-    }
-
-    private float startMoveX;
-    private float startMoveY;
-
-    @Override
     public boolean onTouch(View view, MotionEvent event) {
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                startMoveX = event.getX();
-                startMoveY = event.getY();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                fgOffsetX = (startMoveX - event.getX()) / 4;
-                bgOffsetX = fgOffsetX / 2;
-                fgOffsetY = (startMoveY - event.getY()) / 4;
-                bgOffsetY = fgOffsetY / 2;
-                invalidate();
-                break;
             case MotionEvent.ACTION_UP:
                 if (animator != null && animator.isStarted())
                     animator.cancel();
@@ -301,30 +278,5 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
                 return false;
         }
         return true;
-    }
-
-    private static class UpdateThread extends Thread {
-
-        private WeakReference<AdaptiveIconView> viewReference;
-
-        private UpdateThread(AdaptiveIconView view) {
-            viewReference = new WeakReference<>(view);
-        }
-
-        @Override
-        public void run() {
-            while (true) {
-                AdaptiveIconView view = viewReference.get();
-                if (view != null) {
-                    if (view.hasChanged)
-                        view.invalidate();
-                    try {
-                        sleep(10);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                } else return;
-            }
-        }
     }
 }
