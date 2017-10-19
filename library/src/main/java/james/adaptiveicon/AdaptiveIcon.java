@@ -96,6 +96,9 @@ public class AdaptiveIcon {
         return scale;
     }
 
+    /**
+     * Recycles the bitmaps used in this icon
+     */
     public void recycle() {
         fgBitmap.recycle();
         bgBitmap.recycle();
@@ -250,19 +253,31 @@ public class AdaptiveIcon {
 
         public static class LegacyIconFallback extends Fallback {
 
-            @ColorInt
-            private int backgroundColor = Color.WHITE;
+            private Drawable background;
             @Nullable
             private Boolean shouldClip;
             @Nullable
             private Integer scale;
+
+            public LegacyIconFallback() {
+                background = new ColorDrawable(Color.WHITE);
+            }
 
             /**
              * @param backgroundColor the color of the background, as a color int
              * @return the current LegacyIconFallback, for method chaining
              */
             public LegacyIconFallback withBackgroundColor(@ColorInt int backgroundColor) {
-                this.backgroundColor = backgroundColor;
+                background = new ColorDrawable(backgroundColor);
+                return this;
+            }
+
+            /**
+             * @param background the drawable to use as the background
+             * @return the current LegacyIconFallback, for method chaining
+             */
+            public LegacyIconFallback withBackground(Drawable background) {
+                this.background = background;
                 return this;
             }
 
@@ -286,7 +301,7 @@ public class AdaptiveIcon {
 
             @Override
             public AdaptiveIcon load(Context context, ResolveInfo info) {
-                Drawable foreground, background = new ColorDrawable(backgroundColor);
+                Drawable foreground;
                 try {
                     foreground = info.loadIcon(context.getPackageManager());
                 } catch (Exception e) {
