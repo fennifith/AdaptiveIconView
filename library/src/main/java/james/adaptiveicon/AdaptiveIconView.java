@@ -40,7 +40,6 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
     private int width, height;
     private float x, y;
     private boolean hasChanged;
-    private boolean isAdaptive;
 
     private float bgScale, fgScale;
     private float bgOffsetX, bgOffsetY;
@@ -69,7 +68,6 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
         thread.start();
 
         getViewTreeObserver().addOnGlobalLayoutListener(this);
-        setAdaptive(true);
         setPath(PATH_CIRCLE);
 
         bgScale = 1;
@@ -78,6 +76,15 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
         setOnTouchListener(this);
     }
 
+    //TODO: add methods to control animations
+
+    /**
+     * Sets the icon for this view to use. It must contain a foreground image,
+     * but the background image is optional - without it, the foreground image
+     * will not be clipped and any scaling will not be applied.
+     *
+     * @param icon the icon for this view to use
+     */
     public void setIcon(AdaptiveIcon icon) {
         this.icon = icon;
         scaledFgBitmap = null;
@@ -85,10 +92,22 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
         invalidate();
     }
 
+    /**
+     * Returns the current AdaptiveIcon.
+     *
+     * @return the current AdaptiveIcon
+     */
     public AdaptiveIcon getIcon() {
         return icon;
     }
 
+    /**
+     * Sets a custom path for this view to use, providing that its AdaptiveIcon has
+     * a background image
+     *
+     * @param size the bounds of the path, used to scale it to fit the size of the view
+     * @param path the custom path
+     */
     public void setPath(Rect size, Path path) {
         this.path = path;
         scaledPath = null;
@@ -96,6 +115,11 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
         invalidate();
     }
 
+    /**
+     * Sets a path for this view to use from one of the presets.
+     *
+     * @param pathType must be either PATH_CIRCLE, PATH_SQUIRCLE, PATH_ROUNDED_SQUARE, PATH_SQUARE, or PATH_TEARDROP
+     */
     public void setPath(int pathType) {
         path = new Path();
         pathSize = new Rect(0, 0, 50, 50);
@@ -125,22 +149,23 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
         invalidate();
     }
 
+    /**
+     * Sets a custom path from string data.
+     *
+     * @param pathData the path data string to use
+     */
     public void setPath(String pathData) {
         path = PathUtils.createPathFromPathData(pathData);
         pathSize = new Rect(0, 0, 100, 100);
     }
 
+    /**
+     * Returns the current path this view is using.
+     *
+     * @return the current path this view is using
+     */
     public Path getPath() {
         return path;
-    }
-
-    public void setAdaptive(boolean isAdaptive) {
-        this.isAdaptive = isAdaptive;
-        invalidate();
-    }
-
-    public boolean isAdaptive() {
-        return isAdaptive;
     }
 
     private boolean isPrepared() {
@@ -165,14 +190,32 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
     }
 
     private Bitmap getScaledBitmap(Bitmap bitmap, int width, int height) {
-        int x = bitmap.getWidth() / 6;
-        int y = bitmap.getHeight() / 6;
-        int bmpWidth = (int) (0.666 * bitmap.getWidth());
-        int bmpHeight = (int) (0.666 * bitmap.getHeight());
+        double scale = icon.getScale();
+        double margin = (1 - scale) / 2;
 
-        if (bmpWidth > 0 && bmpHeight > 0)
-            bitmap = Bitmap.createBitmap(bitmap, x, y, bmpWidth, bmpHeight);
-        return ThumbnailUtils.extractThumbnail(bitmap, width, height);
+        if (scale <= 1) {
+            int x = (int) (margin * bitmap.getWidth());
+            int y = (int) (margin * bitmap.getHeight());
+            int bmpWidth = (int) (scale * bitmap.getWidth());
+            int bmpHeight = (int) (scale * bitmap.getHeight());
+
+            if (bmpWidth > 0 && bmpHeight > 0)
+                bitmap = Bitmap.createBitmap(bitmap, x, y, bmpWidth, bmpHeight);
+        } else if (bitmap.getWidth() > 1 && bitmap.getHeight() > 1) {
+            int widthMargin = (int) ((scale - 1) * bitmap.getWidth());
+            int heightMargin = (int) ((scale - 1) * bitmap.getHeight());
+
+            if (widthMargin > 0 && heightMargin > 0) {
+                Bitmap source = bitmap;
+                bitmap = Bitmap.createBitmap(bitmap.getWidth() + widthMargin, bitmap.getWidth() + heightMargin, bitmap.getConfig());
+                Canvas canvas = new Canvas(bitmap);
+                canvas.drawBitmap(source, widthMargin / 2, heightMargin / 2, new Paint());
+            }
+        }
+
+        if (bitmap != null)
+            return ThumbnailUtils.extractThumbnail(bitmap, width, height);
+        else return null;
     }
 
     private Matrix getBgMatrix(int width, int height) {
@@ -194,21 +237,22 @@ public class AdaptiveIconView extends View implements ViewTreeObserver.OnGlobalL
                 width = canvas.getWidth();
                 height = canvas.getHeight();
                 scaledPath = getScaledPath(path, pathSize, width, height);
-                scaledBgBitmap = getScaledBitmap(icon.getBgBitmap(), width, height);
-                if (icon.getFgBitmap() != null)
+                if (icon.getBgBitmap() != null) {
+                    scaledBgBitmap = getScaledBitmap(icon.getBgBitmap(), width, height);
                     scaledFgBitmap = getScaledBitmap(icon.getFgBitmap(), width, height);
+                } else if (icon.getFgBitmap() != null)
+                    scaledFgBitmap = ThumbnailUtils.extractThumbnail(icon.getFgBitmap(), width, height);
+
             }
 
-            if (isAdaptive) {
+            if (scaledBgBitmap != null) {
                 canvas.drawPath(scaledPath, paint);
                 canvas.clipPath(scaledPath);
-                if (scaledBgBitmap != null)
-                    canvas.drawBitmap(scaledBgBitmap, getBgMatrix(scaledBgBitmap.getWidth(), scaledBgBitmap.getHeight()), paint);
-                if (scaledFgBitmap != null)
-                    canvas.drawBitmap(scaledFgBitmap, getFgMatrix(scaledFgBitmap.getWidth(), scaledFgBitmap.getHeight()), paint);
-            } else if (icon.getBgBitmap() != null) {
-                canvas.drawBitmap(ThumbnailUtils.extractThumbnail(icon.getBgBitmap(), width, height), 0, 0, paint);
+                canvas.drawBitmap(scaledBgBitmap, getBgMatrix(scaledBgBitmap.getWidth(), scaledBgBitmap.getHeight()), paint);
             }
+
+            if (scaledFgBitmap != null)
+                canvas.drawBitmap(scaledFgBitmap, getFgMatrix(scaledFgBitmap.getWidth(), scaledFgBitmap.getHeight()), paint);
         }
     }
 

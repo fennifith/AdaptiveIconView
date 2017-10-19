@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -35,7 +36,11 @@ public class MainActivity extends AppCompatActivity {
 
         List<AdaptiveIcon> icons = new ArrayList<>();
         for (ResolveInfo info : infos) {
-            AdaptiveIcon icon = AdaptiveIcon.load(this, info);
+            AdaptiveIcon icon = new AdaptiveIcon.Loader()
+                    .with(this)
+                    .fallback(new AdaptiveIcon.Loader.LegacyIconFallback()
+                            .withBackgroundColor(Color.GRAY))
+                    .load(info);
             if (icon != null)
                 icons.add(icon);
         }
