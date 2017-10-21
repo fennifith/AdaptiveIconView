@@ -1,17 +1,15 @@
 package james.adaptiveiconsample;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +18,7 @@ import java.util.List;
 import james.adaptiveicon.AdaptiveIcon;
 import james.adaptiveicon.utils.ConversionUtils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private RecyclerAdapter adapter;
     private GridLayoutManager layoutManager;
@@ -41,8 +39,7 @@ public class MainActivity extends AppCompatActivity {
         for (ResolveInfo info : infos) {
             AdaptiveIcon icon = new AdaptiveIcon.Loader()
                     .with(this)
-                    .fallback(new AdaptiveIcon.Loader.LegacyIconFallback()
-                            .withBackgroundColor(Color.GRAY))
+                    .fallback(new AdaptiveIcon.Loader.LegacyIconFallback())
                     .load(info);
             if (icon != null)
                 icons.add(icon);
@@ -60,20 +57,12 @@ public class MainActivity extends AppCompatActivity {
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menuPathShape:
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.title_path_shape)
+        findViewById(R.id.iconShape).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Path Shape")
                         .setSingleChoiceItems(new CharSequence[]{
                                 "Circle",
                                 "Squircle",
@@ -88,8 +77,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         })
                         .show();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
+            }
+        });
     }
 }
