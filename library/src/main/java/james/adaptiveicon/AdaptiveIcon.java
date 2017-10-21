@@ -156,7 +156,7 @@ public class AdaptiveIcon {
                 for (String type : new String[]{"mipmap", "drawable"}) {
                     for (String config : new String[]{"-anydpi-v26", "-v26", ""}) {
                         try {
-                            parser = assetManager.openXmlResourceParser("res/" + type + config + "/ic_launcher.xml");
+                            parser = assetManager.openXmlResourceParser("res/" + type + config + "/ic_launcher.xml"); //TODO: get filename from AndroidManifest.xml
                         } catch (Exception e) {
                             continue;
                         }
@@ -243,7 +243,7 @@ public class AdaptiveIcon {
             }
 
             if (foreground != null && background != null)
-                return new AdaptiveIcon(foreground, background, 0.666);
+                return new AdaptiveIcon(foreground, background, 0.5);
             else if (fallback != null)
                 return fallback.load(context, info);
             else return null;
@@ -316,7 +316,7 @@ public class AdaptiveIcon {
                     }
                 }
 
-                return new AdaptiveIcon(foreground, shouldClip != null && !shouldClip ? null : background, scale != null ? scale : (ImageUtils.hasTransparency(ImageUtils.drawableToBitmap(foreground)) ? 1.5 : 1));
+                return new AdaptiveIcon(foreground, shouldClip != null && !shouldClip ? null : background, scale != null ? scale : (ImageUtils.hasTransparency(ImageUtils.drawableToBitmap(foreground)) ? 1.25 : 1));
             }
         }
 

@@ -10,8 +10,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -25,6 +23,7 @@ import james.adaptiveicon.utils.ConversionUtils;
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerAdapter adapter;
+    private GridLayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         RecyclerView recycler = findViewById(R.id.recycler);
-        recycler.setLayoutManager(new GridLayoutManager(this, 4));
+        layoutManager = new GridLayoutManager(this, 4);
+        recycler.setLayoutManager(layoutManager);
 
         List<ResolveInfo> infos = getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), PackageManager.GET_META_DATA);
         Collections.sort(infos, new ResolveInfo.DisplayNameComparator(getPackageManager()));
@@ -50,46 +50,16 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new RecyclerAdapter(icons);
         recycler.setAdapter(adapter);
-
-        new ItemTouchHelper(new ItemTouchHelper.Callback() {
-            int prevX;
-            int prevY;
-
+        recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG, ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
-            }
-
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-
-            }
-
-            @Override
-            public RecyclerView.ViewHolder chooseDropTarget(RecyclerView.ViewHolder selected, List<RecyclerView.ViewHolder> dropTargets, int curX, int curY) {
-                if (selected instanceof RecyclerAdapter.ViewHolder) {
-                    int xDiff = curX - prevX;
-                    int yDiff = curY - prevY;
-                    int pixels = ConversionUtils.dpToPx(48);
-
-                    xDiff = xDiff > 0 ? Math.min(xDiff, pixels) : Math.max(xDiff, -pixels);
-                    yDiff = yDiff > 0 ? Math.min(yDiff, pixels) : Math.max(yDiff, -pixels);
-
-                    ((RecyclerAdapter.ViewHolder) selected).iconView.onMovement((float) xDiff / pixels, (float) yDiff / pixels);
-                    Log.d("Movement", (float) xDiff / pixels + ", " + (float) yDiff / pixels);
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                for (int i = layoutManager.findFirstVisibleItemPosition(); i <= layoutManager.findLastVisibleItemPosition(); i++) {
+                    RecyclerAdapter.ViewHolder viewHolder = (RecyclerAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
+                    viewHolder.iconView.setOffset(0, Math.min(1, (float) dy / ConversionUtils.dpToPx(24)));
                 }
-
-                prevX = curX;
-                prevY = curY;
-
-                return super.chooseDropTarget(selected, dropTargets, curX, curY);
+                super.onScrolled(recyclerView, dx, dy);
             }
-        }).attachToRecyclerView(recycler);
+        });
     }
 
     @Override

@@ -19,7 +19,7 @@ import android.view.animation.DecelerateInterpolator;
 
 import james.adaptiveicon.utils.PathUtils;
 
-public class AdaptiveIconView extends View implements View.OnTouchListener {
+public class AdaptiveIconView extends View implements View.OnTouchListener { //TODO: remove arbitrary calculations, improve bitmap handling
 
     public static final int PATH_CIRCLE = 0;
     public static final int PATH_SQUIRCLE = 1;
@@ -36,9 +36,8 @@ public class AdaptiveIconView extends View implements View.OnTouchListener {
 
     private int width, height;
 
-    private float bgScale = 1, fgScale = 1;
-    private float fgOffsetX, fgOffsetY;
-    private ValueAnimator offsetXAnimator, offsetYAnimator;
+    private float fgScale = 1;
+    private float offsetX, offsetY;
 
     private Paint paint;
 
@@ -61,8 +60,6 @@ public class AdaptiveIconView extends View implements View.OnTouchListener {
         setPath(PATH_CIRCLE);
         setOnTouchListener(this);
     }
-
-    //TODO: add methods to control animations
 
     /**
      * Sets the icon for this view to use. It must contain a foreground image,
@@ -155,13 +152,15 @@ public class AdaptiveIconView extends View implements View.OnTouchListener {
     }
 
     /**
-     * Call this method to animate icon movements.
+     * Call this method to offset the icon for animating icon movements
      *
-     * @param movementX the amount to move the icon (reversed) horizontally, between 0 and 1
-     * @param movementY the amount to move the icon (reversed) vertically, between 0 and 1
+     * @param offsetX the amount to move the icon (reversed) horizontally, between 0 and 1
+     * @param offsetY the amount to move the icon (reversed) vertically, between 0 and 1
      */
-    public void onMovement(float movementX, float movementY) {
-        //TODO: come up with some weird logic for this
+    public void setOffset(float offsetX, float offsetY) {
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        invalidate();
     }
 
     private boolean isPrepared() {
@@ -187,44 +186,26 @@ public class AdaptiveIconView extends View implements View.OnTouchListener {
 
     private Bitmap getScaledBitmap(Bitmap bitmap, int width, int height) {
         double scale = icon.getScale();
-        double margin = (1 - scale) / 2;
 
-        if (scale <= 1) {
-            int x = (int) (margin * bitmap.getWidth());
-            int y = (int) (margin * bitmap.getHeight());
-            int bmpWidth = (int) (scale * bitmap.getWidth());
-            int bmpHeight = (int) (scale * bitmap.getHeight());
-
-            if (bmpWidth > 0 && bmpHeight > 0)
-                bitmap = Bitmap.createBitmap(bitmap, x, y, bmpWidth, bmpHeight);
-        } else if (bitmap.getWidth() > 1 && bitmap.getHeight() > 1) {
-            int widthMargin = (int) ((scale - 1) * bitmap.getWidth());
-            int heightMargin = (int) ((scale - 1) * bitmap.getHeight());
+        if (scale <= 1)
+            return ThumbnailUtils.extractThumbnail(bitmap, (int) ((2 - scale) * width), (int) ((2 - scale) * height));
+        else if (bitmap.getWidth() > 1 && bitmap.getHeight() > 1) {
+            int widthMargin = (int) ((scale - 1) * width);
+            int heightMargin = (int) ((scale - 1) * height);
 
             if (widthMargin > 0 && heightMargin > 0) {
-                Bitmap source = bitmap;
-                bitmap = Bitmap.createBitmap(bitmap.getWidth() + widthMargin, bitmap.getWidth() + heightMargin, bitmap.getConfig());
+                Bitmap source = ThumbnailUtils.extractThumbnail(bitmap, (int) ((2 - scale) * width), (int) ((2 - scale) * height));
+                int dWidth = width + widthMargin;
+                int dHeight = height + heightMargin;
+                bitmap = Bitmap.createBitmap(dWidth, dHeight, bitmap.getConfig());
                 Canvas canvas = new Canvas(bitmap);
-                canvas.drawBitmap(source, widthMargin / 2, heightMargin / 2, new Paint());
+                canvas.drawBitmap(source, (dWidth - source.getWidth()) / 2, (dHeight - source.getHeight()) / 2, new Paint());
+                return bitmap;
             }
-        }
-
-        if (bitmap != null)
+        } else if (bitmap.getWidth() > 0 && bitmap.getHeight() > 0)
             return ThumbnailUtils.extractThumbnail(bitmap, width, height);
-        else return null;
-    }
 
-    private Matrix getBgMatrix(int width, int height) {
-        Matrix matrix = new Matrix();
-        matrix.postScale(bgScale, bgScale, ((float) width / 2), ((float) height / 2));
-        return matrix;
-    }
-
-    private Matrix getFgMatrix(int width, int height) {
-        Matrix matrix = new Matrix();
-        matrix.postScale(fgScale, fgScale, ((float) width / 2), ((float) height / 2));
-        matrix.postTranslate(fgOffsetX * width * 0.333f, fgOffsetY * height * 0.333f);
-        return matrix;
+        return null;
     }
 
     @Override
@@ -245,11 +226,19 @@ public class AdaptiveIconView extends View implements View.OnTouchListener {
             if (scaledBgBitmap != null) {
                 canvas.drawPath(scaledPath, paint);
                 canvas.clipPath(scaledPath);
-                canvas.drawBitmap(scaledBgBitmap, getBgMatrix(scaledBgBitmap.getWidth(), scaledBgBitmap.getHeight()), paint);
+                float marginX = (scaledBgBitmap.getWidth() - width) / 2;
+                float marginY = (scaledBgBitmap.getHeight() - height) / 2;
+                float dx = (width * offsetX * 0.066f) - marginX;
+                float dy = (height * offsetY * 0.066f) - marginY;
+                canvas.drawBitmap(scaledBgBitmap, dx, dy, paint);
             }
 
-            if (scaledFgBitmap != null)
-                canvas.drawBitmap(scaledFgBitmap, getFgMatrix(scaledFgBitmap.getWidth(), scaledFgBitmap.getHeight()), paint);
+            if (scaledFgBitmap != null) {
+                float dx = ((width - scaledFgBitmap.getWidth()) / 2) + (width * offsetX * 0.188f);
+                float dy = ((height - scaledFgBitmap.getHeight()) / 2) + (height * offsetY * 0.188f);
+                canvas.drawBitmap(scaledFgBitmap, dx, dy, paint);
+                //TODO: re-implement scaling using fgScale
+            }
         }
     }
 
@@ -266,9 +255,7 @@ public class AdaptiveIconView extends View implements View.OnTouchListener {
                 animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                        float value = (float) valueAnimator.getAnimatedValue();
-                        bgScale = ((value - 1) / 2) + 1;
-                        fgScale = value;
+                        fgScale = (float) valueAnimator.getAnimatedValue();
                         invalidate();
                     }
                 });
