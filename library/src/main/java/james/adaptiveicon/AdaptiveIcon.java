@@ -24,6 +24,10 @@ import james.adaptiveicon.utils.ResourceUtils;
 
 public class AdaptiveIcon {
 
+    private static final String ANDROID_SCHEMA = "http://schemas.android.com/apk/res/android";
+    private static final String[] IC_DIRS = new String[]{"mipmap", "drawable"};
+    private static final String[] IC_CONFIGS = new String[]{"-anydpi-v26", "-v26", ""};
+
     private Drawable fgDrawable;
     private Drawable bgDrawable;
     private Bitmap fgBitmap;
@@ -152,17 +156,42 @@ public class AdaptiveIcon {
                 ResourceUtils.setFakeConfig(resources, Build.VERSION_CODES.O);
                 AssetManager assetManager = resources.getAssets();
 
-                XmlResourceParser parser = null;
-                for (String type : new String[]{"mipmap", "drawable"}) {
-                    for (String config : new String[]{"-anydpi-v26", "-v26", ""}) {
-                        try {
-                            parser = assetManager.openXmlResourceParser("res/" + type + config + "/ic_launcher.xml"); //TODO: get filename from AndroidManifest.xml
-                        } catch (Exception e) {
-                            continue;
+                XmlResourceParser manifestParser = null;
+                String iconName = null;
+                try {
+                    manifestParser = assetManager.openXmlResourceParser("AndroidManifest.xml");
+                } catch (Exception e) {
+                }
+
+                if (manifestParser != null) {
+                    int event;
+                    while ((event = manifestParser.getEventType()) != XmlPullParser.END_DOCUMENT) {
+                        if (event == XmlPullParser.START_TAG && manifestParser.getName().equals("application")) {
+                            iconName = resources.getResourceName(manifestParser.getAttributeResourceValue(ANDROID_SCHEMA, "icon", 0));
+                            if (iconName.contains("/"))
+                                iconName = iconName.split("/")[1];
+                            break;
                         }
 
-                        if (parser != null)
-                            break;
+                        manifestParser.next();
+                    }
+
+                    manifestParser.close();
+                }
+
+                XmlResourceParser parser = null;
+                for (int dir = 0; dir < IC_DIRS.length && parser == null; dir++) {
+                    for (int config = 0; config < IC_CONFIGS.length && parser == null; config++) {
+                        for (String name : iconName != null && !iconName.equals("ic_launcher") ? new String[]{iconName, "ic_launcher"} : new String[]{"ic_launcher"}) {
+                            try {
+                                parser = assetManager.openXmlResourceParser("res/" + IC_DIRS[dir] + IC_CONFIGS[config] + "/" + name + ".xml");
+                            } catch (Exception e) {
+                                continue;
+                            }
+
+                            if (parser != null)
+                                break;
+                        }
                     }
                 }
 
@@ -173,16 +202,15 @@ public class AdaptiveIcon {
                         if (event == XmlPullParser.START_TAG) {
                             switch (parser.getName()) {
                                 case "background":
+                                    for (int dir = 0; dir < IC_DIRS.length; dir++) {
+
+                                    }
                                     try {
                                         backgroundRes = parser.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "drawable", 0);
                                     } catch (Exception e) {
                                         try {
                                             backgroundRes = parser.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "mipmap", 0);
                                         } catch (Exception e1) {
-                                            try {
-                                                backgroundRes = resources.getIdentifier(info.activityInfo.packageName + ":" + parser.getAttributeValue(null, "android:drawable").substring(1), null, null);
-                                            } catch (Exception e2) {
-                                            }
                                         }
                                     }
                                     break;
@@ -193,10 +221,6 @@ public class AdaptiveIcon {
                                         try {
                                             foregroundRes = parser.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "mipmap", 0);
                                         } catch (Exception e1) {
-                                            try {
-                                                foregroundRes = resources.getIdentifier(info.activityInfo.packageName + ":" + parser.getAttributeValue(null, "android:drawable").substring(1), null, null);
-                                            } catch (Exception e2) {
-                                            }
                                         }
                                     }
                                     break;
@@ -212,6 +236,7 @@ public class AdaptiveIcon {
                     try {
                         background = ResourcesCompat.getDrawable(resources, backgroundRes, theme);
                     } catch (Resources.NotFoundException e) {
+
                         try {
                             background = ResourcesCompat.getDrawable(resources, resources.getIdentifier("ic_launcher_background", "mipmap", info.activityInfo.packageName), theme);
                         } catch (Resources.NotFoundException e1) {
