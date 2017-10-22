@@ -56,6 +56,7 @@ public class AdaptiveIconView extends View implements View.OnTouchListener { //T
         paint = new Paint();
         paint.setAntiAlias(true);
         paint.setColor(Color.LTGRAY);
+        paint.setFilterBitmap(true);
 
         setPath(PATH_CIRCLE);
         setOnTouchListener(this);
@@ -226,12 +227,19 @@ public class AdaptiveIconView extends View implements View.OnTouchListener { //T
             if (scaledBgBitmap != null) {
                 canvas.drawPath(scaledPath, paint);
                 canvas.clipPath(scaledPath);
-                canvas.scale(2 - ((fgScale + 1) / 2), 2 - ((fgScale + 1) / 2), width / 2, height / 2);
+
+                float dx = width * offsetX * 0.066f;
+                float dy = height * offsetY * 0.066f;
+                if (scaledBgBitmap.getWidth() > width && scaledBgBitmap.getHeight() > height)
+                    canvas.scale(2 - ((fgScale + 1) / 2), 2 - ((fgScale + 1) / 2), width / 2, height / 2);
+                else {
+                    dx = 0;
+                    dy = 0;
+                }
+
                 float marginX = (scaledBgBitmap.getWidth() - width) / 2;
                 float marginY = (scaledBgBitmap.getHeight() - height) / 2;
-                float dx = (width * offsetX * 0.066f) - marginX;
-                float dy = (height * offsetY * 0.066f) - marginY;
-                canvas.drawBitmap(scaledBgBitmap, dx, dy, paint);
+                canvas.drawBitmap(scaledBgBitmap, dx - marginX, dy - marginY, paint);
             }
 
             if (scaledFgBitmap != null) {

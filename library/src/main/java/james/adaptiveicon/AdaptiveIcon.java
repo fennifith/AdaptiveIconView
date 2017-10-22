@@ -283,10 +283,7 @@ public class AdaptiveIcon {
             private Boolean shouldClip;
             @Nullable
             private Integer scale;
-
-            public LegacyIconFallback() {
-                background = new ColorDrawable(Color.WHITE);
-            }
+            private boolean removeShadow = true;
 
             /**
              * @param backgroundColor the color of the background, as a color int
@@ -298,10 +295,10 @@ public class AdaptiveIcon {
             }
 
             /**
-             * @param background the drawable to use as the background
+             * @param background the drawable to use as the background, or null to find a color automatically
              * @return the current LegacyIconFallback, for method chaining
              */
-            public LegacyIconFallback withBackground(Drawable background) {
+            public LegacyIconFallback withBackground(@Nullable Drawable background) {
                 this.background = background;
                 return this;
             }
@@ -324,6 +321,15 @@ public class AdaptiveIcon {
                 return this;
             }
 
+            /**
+             * @param removeShadow whether the shadow (or any other transparent parts) should be removed from the icon
+             * @return the current LegacyIconFallback, for method chaining
+             */
+            public LegacyIconFallback shouldRemoveShadow(boolean removeShadow) {
+                this.removeShadow = removeShadow;
+                return this;
+            }
+
             @Override
             public AdaptiveIcon load(Context context, ResolveInfo info) {
                 Drawable foreground;
@@ -341,7 +347,15 @@ public class AdaptiveIcon {
                     }
                 }
 
-                return new AdaptiveIcon(foreground, shouldClip != null && !shouldClip ? null : background, scale != null ? scale : (ImageUtils.hasTransparency(ImageUtils.drawableToBitmap(foreground)) ? 1.25 : 1));
+                Bitmap fgBitmap = ImageUtils.drawableToBitmap(foreground);
+                if (removeShadow)
+                    fgBitmap = ImageUtils.removeShadow(fgBitmap);
+
+                return new AdaptiveIcon(
+                        fgBitmap,
+                        shouldClip != null && !shouldClip ? null : ImageUtils.drawableToBitmap(background != null ? background : new ColorDrawable(ImageUtils.getDominantColor(fgBitmap))),
+                        scale != null ? scale : (ImageUtils.hasTransparency(fgBitmap) ? 1.25 : 1)
+                );
             }
         }
 

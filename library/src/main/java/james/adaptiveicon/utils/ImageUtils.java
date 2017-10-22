@@ -5,6 +5,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ImageUtils {
 
@@ -54,6 +58,59 @@ public class ImageUtils {
         }
 
         return false;
+    }
+
+    /**
+     * Removes the shadow (and any other transparent parts)
+     * from a bitmap.
+     *
+     * @param bitmap the original bitmap
+     * @return the bitmap with the shadow removed
+     */
+    public static Bitmap removeShadow(Bitmap bitmap) {
+        if (!bitmap.isMutable())
+            bitmap = bitmap.copy(bitmap.getConfig(), true);
+
+        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+        for (int i = 0; i < pixels.length; i++) {
+            if (Color.alpha(pixels[i]) < 255)
+                pixels[i] = Color.TRANSPARENT;
+        }
+
+        bitmap.setPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+        return bitmap;
+    }
+
+    /**
+     * Finds the color with the most occurrences inside of a bitmap.
+     *
+     * @param bitmap the bitmap to get the dominant color of
+     * @return the dominant color
+     */
+    @ColorInt
+    public static int getDominantColor(Bitmap bitmap) {
+        Map<Integer, Integer> colors = new HashMap<>();
+
+        for (int y = 0; y < bitmap.getWidth(); y++) {
+            for (int x = 0; x < bitmap.getHeight(); x++) {
+                if (Color.alpha(bitmap.getPixel(x, y)) == 255) {
+                    int color = bitmap.getPixel(x, y);
+                    colors.put(color, (colors.containsKey(color) ? colors.get(color) : 0) + 1);
+                }
+            }
+        }
+
+        int color = Color.TRANSPARENT;
+        int occurrences = 0;
+        for (Integer key : colors.keySet()) {
+            if (colors.get(key) > occurrences) {
+                occurrences = colors.get(key);
+                color = key;
+            }
+        }
+
+        return color;
     }
 
 }
