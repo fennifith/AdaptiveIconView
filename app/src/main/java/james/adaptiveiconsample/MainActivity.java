@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
         for (ResolveInfo info : infos) {
             AdaptiveIcon icon = new AdaptiveIcon.Loader()
                     .with(this)
-                    .fallback(new AdaptiveIcon.Loader.LegacyIconFallback())
+                    .fallback(new AdaptiveIcon.Loader.RoundIconFallback())
                     .load(info);
             if (icon != null)
                 icons.add(icon);

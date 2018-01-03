@@ -47,7 +47,7 @@ public class ImageUtils {
      * whether it has any transparent parts.
      *
      * @param bitmap a bitmap
-     * @return whether the bitmap has transparency
+     * @return true if any part of the bitmap is transparent
      */
     public static boolean hasTransparency(Bitmap bitmap) {
         for (int y = 0; y < bitmap.getWidth(); y++) {

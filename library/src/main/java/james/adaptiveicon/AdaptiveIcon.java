@@ -274,7 +274,125 @@ public class AdaptiveIcon {
             else return null;
         }
 
-        //TODO: add RoundIconFallback and IconPackFallback
+        //TODO: add IconPackFallback
+
+        public static class RoundIconFallback extends Fallback {
+
+            private Drawable background;
+            @Nullable
+            private Integer scale;
+            private boolean removeShadow = true;
+
+            /**
+             * @param backgroundColor the color of the background, as a color int
+             * @return the current RoundIconFallback, for method chaining
+             */
+            public RoundIconFallback withBackgroundColor(@ColorInt int backgroundColor) {
+                background = new ColorDrawable(backgroundColor);
+                return this;
+            }
+
+            /**
+             * @param background the drawable to use as the background, or null to find a color automatically
+             * @return the current RoundIconFallback, for method chaining
+             */
+            public RoundIconFallback withBackground(@Nullable Drawable background) {
+                this.background = background;
+                return this;
+            }
+
+            /**
+             * @param scale the scale of the legacy icon, preferably between 1 and 2, but other values greater than 0 work also
+             * @return the current RoundIconFallback, for method chaining
+             */
+            public RoundIconFallback withScale(@Nullable Integer scale) {
+                this.scale = scale;
+                return this;
+            }
+
+            /**
+             * @param removeShadow whether the shadow (or any other transparent parts) should be removed from the icon
+             * @return the current RoundIconFallback, for method chaining
+             */
+            public RoundIconFallback shouldRemoveShadow(boolean removeShadow) {
+                this.removeShadow = removeShadow;
+                return this;
+            }
+
+            @Nullable
+            @Override
+            public AdaptiveIcon load(Context context, ResolveInfo info) {
+                PackageManager packageManager = context.getPackageManager();
+                Drawable roundIcon;
+
+                try {
+                    Resources resources = packageManager.getResourcesForApplication(info.activityInfo.packageName);
+                    Resources.Theme theme = resources.newTheme();
+                    ResourceUtils.setFakeConfig(resources, Build.VERSION_CODES.O);
+                    AssetManager assetManager = resources.getAssets();
+
+                    XmlResourceParser manifestParser = null;
+                    String iconName = null;
+                    try {
+                        manifestParser = assetManager.openXmlResourceParser("AndroidManifest.xml");
+                    } catch (Exception e) {
+                    }
+
+                    if (manifestParser != null) {
+                        int event;
+                        while ((event = manifestParser.getEventType()) != XmlPullParser.END_DOCUMENT) {
+                            if (event == XmlPullParser.START_TAG && manifestParser.getName().equals("application")) {
+                                iconName = resources.getResourceName(manifestParser.getAttributeResourceValue(ANDROID_SCHEMA, "roundIcon", 0));
+                                if (iconName.contains("/"))
+                                    iconName = iconName.split("/")[1];
+                                break;
+                            }
+
+                            manifestParser.next();
+                        }
+
+                        manifestParser.close();
+                    }
+
+                    if (iconName != null)
+                        Log.d("AdaptiveIcon", "Found a round icon for " + info.activityInfo.packageName + "! " + iconName);
+
+                    try {
+                        roundIcon = ResourcesCompat.getDrawable(resources, resources.getIdentifier(iconName, "mipmap", info.activityInfo.packageName), theme);
+                    } catch (Resources.NotFoundException e1) {
+                        try {
+                            roundIcon = ResourcesCompat.getDrawable(resources, resources.getIdentifier(iconName, "drawable", info.activityInfo.packageName), theme);
+                        } catch (Resources.NotFoundException e2) {
+                            try {
+                                roundIcon = ResourcesCompat.getDrawable(resources, resources.getIdentifier("ic_launcher_round", "mipmap", info.activityInfo.packageName), theme);
+                            } catch (Resources.NotFoundException e3) {
+                                roundIcon = ResourcesCompat.getDrawable(resources, resources.getIdentifier("ic_launcher_round", "drawable", info.activityInfo.packageName), theme);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    if (getFallback() != null)
+                        return getFallback().load(context, info);
+                    else {
+                        if (BuildConfig.DEBUG)
+                            Log.e("AdaptiveIcon", "RoundIconFallback threw \n"
+                                    + e.getClass().getName() + ": " + e.getMessage()
+                                    + "\n without a fallback, returning null");
+                        return null;
+                    }
+                }
+
+                Bitmap fgBitmap = ImageUtils.drawableToBitmap(roundIcon);
+                if (removeShadow)
+                    fgBitmap = ImageUtils.removeShadow(fgBitmap);
+
+                return new AdaptiveIcon(
+                        fgBitmap,
+                        ImageUtils.drawableToBitmap(background != null ? background : new ColorDrawable(ImageUtils.getDominantColor(fgBitmap))),
+                        scale != null ? scale : 0.8
+                );
+            }
+        }
 
         public static class LegacyIconFallback extends Fallback {
 
