@@ -281,7 +281,7 @@ public class AdaptiveIcon {
             private Drawable background;
             @Nullable
             private Integer scale;
-            private boolean removeShadow = true;
+            private boolean removeShadow = false;
 
             /**
              * @param backgroundColor the color of the background, as a color int
@@ -401,7 +401,7 @@ public class AdaptiveIcon {
             private Boolean shouldClip;
             @Nullable
             private Integer scale;
-            private boolean removeShadow = true;
+            private boolean removeShadow = false;
 
             /**
              * @param backgroundColor the color of the background, as a color int
