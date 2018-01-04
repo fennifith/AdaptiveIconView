@@ -1,1 +1,65 @@
-AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo adaptive icon support in Android launchers.
+AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo adaptive icon support in Android launchers. Special thanks to [Lawnchair](https://github.com/LawnchairLauncher/Lawnchair) and its developers for providing the method to access -v26 assets on pre-Oreo devices.
+
+## Usage
+
+### Setup
+
+The Gradle dependency is available through jCenter, which is used by default in Android Studio. To add the module to your project, copy this line into the dependencies section of your build.gradle file.
+
+```gradle
+compile 'james.adaptiveicon:adaptiveicon:0.0.1'
+```
+
+### Loading an Icon
+
+The [`AdaptiveIcon`](https://github.com/TheAndroidMaster/AdaptiveIconView/blob/master/library/src/main/java/james/adaptiveicon/AdaptiveIcon.java) class contains multiple ways to load and store the assets required to pass to an [`AdaptiveIconView`](https://github.com/TheAndroidMaster/AdaptiveIconView/blob/master/library/src/main/java/james/adaptiveicon/AdaptiveIconView.java). Most methods involve the `AdaptiveIcon.Loader` subclass, which contains many customization options and several 'fallback' classes for applications passed that do not have an adaptive icon.
+
+#### Method 1: Simple, Easy, and Just About The Worst Thing That You Could Possibly Do
+
+This method will create an asynchronous thread to load the icon for you, but you will need to properly manage it yourself to prevent memory leaks. Unless you don't care about memory leaks and just want to quickly implement something that works, in which case this is perfect for you. Coincedentally, this is the loading method that is used in the sample application.
+
+```java
+new AdaptiveIcon.Loader()
+  .with(this) //always pass a context before calling any other methods
+  .fallback(new AdaptiveIcon.Loader.LegacyIconFallback()) //(optional) specify a fallback to use if there is no adaptive icon or if it is inaccessible to the app
+  .loadAsync(resolveInfo, new AdaptiveIcon.Loader.AsyncCallback() { //specify a ResolveInfo of the app to load the icon of
+    @Override
+    public void onResult(ResolveInfo info, AdaptiveIcon icon) {
+      //pass the loaded icon to an AdaptiveIconView
+    }
+  });
+```
+
+However, if you actually care about your end users at all, it would be far better to use the `load(ResolveInfo)` method instead of `loadAsync` and handle the multithreading spaghetti yourself. Please also note that, while it may not make a huge impact on performance, you can call `load` multiple times on the same `Loader` with different `ResolveInfo`s instead of creating a new `Loader` for every single icon that you need to load.
+
+#### Method 2: Do It All Yourself
+
+Ignoring the variety of different loading and fallback methods, all that the `AdaptiveIcon` class really does is store drawables, bitmaps, and a scale for the adaptive icon. With this in mind, you can easily create one yourself.
+
+```java
+AdaptiveIcon icon = new AdaptiveIcon(foregroundDrawable, backgroundDrawable, 1.0);
+```
+
+One thing to keep in mind here is that the scale (the third parameter passed to the constructor), for some bizarre reason, is actually reversed. Smaller numbers will make the icon larger, and larger numbers will make it smaller. Keep in mind that the scale does not affect the size of the shape of the icon, only what is displayed inside of it.
+
+### Creating a View
+
+The [AdaptiveIconView](https://github.com/TheAndroidMaster/AdaptiveIconView/blob/master/library/src/main/java/james/adaptiveicon/AdaptiveIconView.java) class should be pretty simple to use. The `setIcon` and `getIcon` methods set and get the `AdaptiveIcon` class it uses, updating the view automatically. `setPath(Rect, Path)`, or `setPath(String)` (which accepts a path string within a 100x100 rect) can be used to specify a shape for the icon to clip to, but you may find it easier to use `setPath(int pathType)` instead (provided types are `PATH_CIRCLE`, `PATH_SQUIRCLE`, `PATH_ROUNDED_SQUARE`, `PATH_SQUARE`, and the infamous `PATH_TEARDROP`). `setOffset(x, y)` can be used to quickly offset the drawables inside the icon for fancy movement animations.
+
+By default, the view will set its own touch listener to animate the icon scale when it is clicked. This can be disabled by setting another touch listener (or just passing null). There are currently no methods to scale the icon yourself, but they should be added soon.
+
+### More Fallback Options
+
+In Method 1, the `LegacyIconFallback` is used to tell the loader to create an `AdaptiveIcon` using the legacy icon if there is no adaptive icon for the specified `ResolveInfo`. In addition to this, fallbacks can be chained together - you can create another fallback as a fallback for another fallback that is the fallback for the original loader - and there are many more options that have not yet been covered. Instead of going over all of the options in detail, I will just create a table for each of the fallbacks with short descriptions of each.
+
+#### LegacyIconFallback
+
+TODO: create table
+
+#### RoundIconFallback
+
+TODO: create table
+
+#### IconPackFallback
+
+This fallback has not yet been created (see [issue #1](https://github.com/TheAndroidMaster/AdaptiveIconView/issues/1)), but will allow you to pass the package name of an icon pack for the loader to use.
