@@ -12,6 +12,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
@@ -274,6 +276,30 @@ public class AdaptiveIcon {
             else return null;
         }
 
+        /**
+         * Crappy async implementation
+         *
+         * @param info     the app to load the icon for
+         * @param callback an interface to pass the adaptive icon to, or null if it cannot be obtained
+         * @return the started thread
+         */
+        public Thread loadAsync(final ResolveInfo info, final AsyncCallback callback) {
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    final AdaptiveIcon icon = load(info);
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onResult(info, icon);
+                        }
+                    });
+                }
+            };
+            thread.start();
+            return thread;
+        }
+
         //TODO: add IconPackFallback
 
         public static class RoundIconFallback extends Fallback {
@@ -509,6 +535,10 @@ public class AdaptiveIcon {
             @Nullable
             public abstract AdaptiveIcon load(Context context, ResolveInfo info);
 
+        }
+
+        public interface AsyncCallback {
+            void onResult(ResolveInfo info, AdaptiveIcon icon);
         }
 
     }

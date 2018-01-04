@@ -35,15 +35,20 @@ public class MainActivity extends Activity {
         List<ResolveInfo> infos = getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), PackageManager.GET_META_DATA);
         Collections.sort(infos, new ResolveInfo.DisplayNameComparator(getPackageManager()));
 
-        List<AdaptiveIcon> icons = new ArrayList<>();
+        final List<AdaptiveIcon> icons = new ArrayList<>();
         for (ResolveInfo info : infos) {
-            AdaptiveIcon icon = new AdaptiveIcon.Loader()
+            new AdaptiveIcon.Loader()
                     .with(this)
                     .fallback(new AdaptiveIcon.Loader.RoundIconFallback()
                             .withFallback(new AdaptiveIcon.Loader.LegacyIconFallback()))
-                    .load(info);
-            if (icon != null)
-                icons.add(icon);
+                    .loadAsync(info, new AdaptiveIcon.Loader.AsyncCallback() {
+                        @Override
+                        public void onResult(ResolveInfo info, AdaptiveIcon icon) {
+                            icons.add(icon);
+                            if (adapter != null)
+                                adapter.notifyItemInserted(icons.size() - 1);
+                        }
+                    });
         }
 
         adapter = new RecyclerAdapter(icons);
