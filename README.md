@@ -52,13 +52,32 @@ By default, the view will set its own touch listener to animate the icon scale w
 
 In Method 1, the `LegacyIconFallback` is used to tell the loader to create an `AdaptiveIcon` using the legacy icon if there is no adaptive icon for the specified `ResolveInfo`. In addition to this, fallbacks can be chained together - you can create another fallback as a fallback for another fallback that is the fallback for the original loader - and there are many more options that have not yet been covered. Instead of going over all of the options in detail, I will just create a table for each of the fallbacks with short descriptions of each.
 
+#### Fallback (abstract class)
+
+|Method Name|Parameters|Description|
+|-----|-----|-----|
+|withFallback|Fallback|Sets a fallback to use if there is no icon for this fallback.|
+|getFallback||Returns the current fallback, or null if there isn't one.|
+|load|Context, ResolveInfo|Loads the icon for this fallback, or this fallback's fallback if it fails.|
+
 #### LegacyIconFallback
 
-TODO: create table
+|Method Name|Parameters|Description|
+|-----|-----|-----|
+|withBackgroundColor|@ColorInt int|Sets the background to a new ColorDrawable of the passed color int (defaults to the dominant color of the legacy icon).|
+|withBackground|Drawable|Sets the background to the passed Drawable.|
+|shouldClip|@Nullable Boolean|Whether legacy icons should be clipped by the shape, or null (the default value) to determine automatically.|
+|withScale|@Nullable Double|Specify a custom scale for legacy icons, or null (default) to determine automatically.|
+|shouldRemoveShadow|boolean|Whether the shadow and other transparent parts should be removed from the icon - may sometimes result in choppy edges (defaults to false).|
 
 #### RoundIconFallback
 
-TODO: create table
+|Method Name|Parameters|Description|
+|-----|-----|-----|
+|withBackgroundColor|@ColorInt int|Sets the background to a new ColorDrawable of the passed color int (defaults to the dominant color of the round icon).|
+|withBackground|Drawable|Sets the background to the passed Drawable.|
+|withScale|@Nullable Double|Specify a custom scale for round icons, or null (default) to determine automatically.|
+|shouldRemoveShadow|boolean|Whether the shadow and other transparent parts should be removed from the icon - may sometimes result in choppy edges (defaults to false).|
 
 #### IconPackFallback
 
