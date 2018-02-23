@@ -1,5 +1,10 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
+
+ext {
+    PUBLISH_GROUP_ID = 'me.jfenn'
+    PUBLISH_ARTIFACT_ID = 'adaptiveicon'
+    PUBLISH_VERSION = '0.0.1'
+}
 
 android {
     compileSdkVersion 26
@@ -28,3 +33,5 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:26.1.0'
     testImplementation 'junit:junit:4.12'
 }
+
+apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
