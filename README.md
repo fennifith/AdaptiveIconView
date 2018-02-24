@@ -4,7 +4,17 @@ AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo 
 
 ### Setup
 
-The Gradle dependency is available through jCenter, which is used by default in Android Studio. To add the module to your project, copy this line into the dependencies section of your build.gradle file.
+The Gradle dependency will soon be available through jCenter, which is used by default in Android Studio. Until then, simply add the following to your project's build.gradle file instead:
+
+```gradle
+allprojects {
+  repositories {
+    maven { url 'https://dl.bintray.com/18jafenn90/maven' }
+  }
+}
+```
+
+To add the dependency to your project, copy this line into the dependencies section of your build.gradle file.
 
 ```gradle
 compile 'me.jfenn:adaptiveicon:0.0.1'
