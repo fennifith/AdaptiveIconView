@@ -1,5 +1,11 @@
 AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo adaptive icon support in Android launchers. Special thanks to [Lawnchair](https://github.com/LawnchairLauncher/Lawnchair) and its developers for providing the method to access -v26 assets on pre-Oreo devices.
 
+## Screenshots
+
+|Circles|Squircles|Teardrops|
+|-----|-----|-----|
+|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Circle.png)|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Squircle.png)|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Teardrop.png)|
+
 ## Usage
 
 ### Setup
