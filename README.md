@@ -1,13 +1,29 @@
 AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo adaptive icon support in Android launchers. Special thanks to [Lawnchair](https://github.com/LawnchairLauncher/Lawnchair) and its developers for providing the method to access -v26 assets on pre-Oreo devices.
 
+## Screenshots
+
+|Circles|Squircles|Teardrops|
+|-----|-----|-----|
+|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Circle.png)|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Squircle.png)|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Teardrop.png)|
+
 ## Usage
 
 ### Setup
 
-The Gradle dependency is available through jCenter, which is used by default in Android Studio. To add the module to your project, copy this line into the dependencies section of your build.gradle file.
+The Gradle dependency will soon be available through jCenter, which is used by default in Android Studio. Until then, simply add the following to your project's build.gradle file instead:
 
 ```gradle
-compile 'james.adaptiveicon:adaptiveicon:0.0.1'
+allprojects {
+  repositories {
+    maven { url 'https://dl.bintray.com/18jafenn90/maven' }
+  }
+}
+```
+
+To add the dependency to your project, copy this line into the dependencies section of your build.gradle file.
+
+```gradle
+compile 'me.jfenn:adaptiveicon:0.0.1'
 ```
 
 ### Loading an Icon
