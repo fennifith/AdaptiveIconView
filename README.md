@@ -24,7 +24,7 @@ The [`AdaptiveIcon`](https://github.com/TheAndroidMaster/AdaptiveIconView/blob/m
 
 #### Method 1: Simple, Easy, and Just About The Worst Thing That You Could Possibly Do
 
-This method will create an asynchronous thread to load the icon for you, but you will need to properly manage it yourself to prevent memory leaks. Unless you don't care about memory leaks and just want to quickly implement something that works, in which case this is perfect for you. Coincedentally, this is the loading method that is used in the sample application.
+This method will create an asynchronous thread to load the icon for you, but you will need to properly manage it yourself to prevent memory leaks. Unless you don't care about memory leaks and just want to quickly implement something that works, in which case this is perfect for you. Coincidentally, this is the loading method that is used in the sample application.
 
 ```java
 new AdaptiveIcon.Loader()
