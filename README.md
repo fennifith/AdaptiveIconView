@@ -1,4 +1,6 @@
-AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo adaptive icon support in Android launchers. Special thanks to [Lawnchair](https://github.com/LawnchairLauncher/Lawnchair) and its developers for providing the method to access -v26 assets on pre-Oreo devices.
+AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo adaptive icon support in Android launchers. Special thanks to [Lawnchair](https://github.com/LawnchairLauncher/Lawnchair) and its developers for providing the method used to access -v26 assets on pre-Oreo devices. 
+
+For demonstration purposes, sample APKs can be downloaded [here](https://github.com/TheAndroidMaster/AdaptiveIconView/releases).
 
 ## Screenshots
 
@@ -10,17 +12,7 @@ AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo 
 
 ### Setup
 
-The Gradle dependency will soon be available through jCenter, which is used by default in Android Studio. Until then, simply add the following to your project's build.gradle file instead:
-
-```gradle
-allprojects {
-  repositories {
-    maven { url 'https://dl.bintray.com/18jafenn90/maven' }
-  }
-}
-```
-
-To add the dependency to your project, copy this line into the dependencies section of your build.gradle file.
+The Gradle dependency is available through jCenter, which is used by default in Android Studio. To add the dependency to your project, copy this line into the dependencies section of your build.gradle file.
 
 ```gradle
 compile 'me.jfenn:adaptiveicon:0.0.1'
@@ -32,7 +24,7 @@ The [`AdaptiveIcon`](https://github.com/TheAndroidMaster/AdaptiveIconView/blob/m
 
 #### Method 1: Simple, Easy, and Just About The Worst Thing That You Could Possibly Do
 
-This method will create an asynchronous thread to load the icon for you, but you will need to properly manage it yourself to prevent memory leaks. Unless you don't care about memory leaks and just want to quickly implement something that works, in which case this is perfect for you. Coincedentally, this is the loading method that is used in the sample application.
+This method will create an asynchronous thread to load the icon for you, but you will need to properly manage it yourself to prevent memory leaks. Unless you don't care about memory leaks and just want to quickly implement something that works, in which case this is perfect for you. Coincidentally, this is the loading method that is used in the sample application.
 
 ```java
 new AdaptiveIcon.Loader()
