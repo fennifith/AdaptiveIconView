@@ -73,7 +73,7 @@ public class AdaptiveIconView extends View implements View.OnTouchListener { //T
         this.icon = icon;
         scaledFgBitmap = null;
         scaledBgBitmap = null;
-        invalidate();
+        postInvalidate();
     }
 
     /**
@@ -96,7 +96,7 @@ public class AdaptiveIconView extends View implements View.OnTouchListener { //T
         this.path = path;
         scaledPath = null;
         pathSize = size;
-        invalidate();
+        postInvalidate();
     }
 
     /**
@@ -130,7 +130,7 @@ public class AdaptiveIconView extends View implements View.OnTouchListener { //T
                 break;
         }
 
-        invalidate();
+        postInvalidate();
     }
 
     /**
@@ -161,7 +161,7 @@ public class AdaptiveIconView extends View implements View.OnTouchListener { //T
     public void setOffset(float offsetX, float offsetY) {
         this.offsetX = offsetX;
         this.offsetY = offsetY;
-        invalidate();
+        postInvalidate();
     }
 
     private boolean isPrepared() {
@@ -266,7 +266,7 @@ public class AdaptiveIconView extends View implements View.OnTouchListener { //T
                     @Override
                     public void onAnimationUpdate(ValueAnimator valueAnimator) {
                         fgScale = (float) valueAnimator.getAnimatedValue();
-                        invalidate();
+                        postInvalidate();
                     }
                 });
                 animator.start();
