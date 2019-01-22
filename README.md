@@ -4,7 +4,7 @@ For demonstration purposes, sample APKs can be downloaded [here](../../releases)
 
 [![](https://jitpack.io/v/me.jfenn/AdaptiveIconView.svg)](https://jitpack.io/#me.jfenn/AdaptiveIconView)
 [![Build Status](https://travis-ci.com/fennifith/AdaptiveIconView.svg)](https://travis-ci.com/fennifith/AdaptiveIconView)
-[![Discord](https://img.shields.io/discord/514625116706177035.svg)](https://discord.gg/sVtzgbr)
+[![Discord](https://img.shields.io/discord/514625116706177035.svg?logo=discord&colorB=7289da)](https://discord.gg/sVtzgbr)
 
 ## Screenshots
 
@@ -109,4 +109,4 @@ In Method 1, the `LegacyIconFallback` is used to tell the loader to create an `A
 
 #### IconPackFallback
 
-This fallback has not yet been created (see [issue #1](https://github.com/TheAndroidMaster/AdaptiveIconView/issues/1)), but will allow you to pass the package name of an icon pack for the loader to use.
+This fallback has not yet been created (see [issue #1](../../issues/1)), but will allow you to pass the package name of an icon pack for the loader to use.
