@@ -14,9 +14,9 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
-import android.support.v4.content.res.ResourcesCompat;
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParser;

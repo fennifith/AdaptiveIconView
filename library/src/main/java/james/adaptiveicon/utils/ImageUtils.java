@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
+import androidx.annotation.ColorInt;
 
 import java.util.HashMap;
 import java.util.Map;

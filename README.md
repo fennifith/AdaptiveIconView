@@ -1,22 +1,42 @@
 AdaptiveIconView is a library built to allow an easy implementation of pre-Oreo adaptive icon support in Android launchers. Special thanks to [Lawnchair](https://github.com/LawnchairLauncher/Lawnchair) and its developers for providing the method used to access -v26 assets on pre-Oreo devices. 
 
-For demonstration purposes, sample APKs can be downloaded [here](https://github.com/TheAndroidMaster/AdaptiveIconView/releases).
+For demonstration purposes, sample APKs can be downloaded [here](../../releases).
+
+[![](https://jitpack.io/v/me.jfenn/AdaptiveIconView.svg)](https://jitpack.io/#me.jfenn/AdaptiveIconView)
+[![Build Status](https://travis-ci.com/fennifith/AdaptiveIconView.svg)](https://travis-ci.com/fennifith/AdaptiveIconView)
+[![Discord](https://img.shields.io/discord/514625116706177035.svg)](https://discord.gg/sVtzgbr)
 
 ## Screenshots
 
-|Circles|Squircles|Teardrops|
-|-----|-----|-----|
-|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Circle.png)|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Squircle.png)|![img](https://raw.githubusercontent.com/TheAndroidMaster/TheAndroidMaster.github.io/master/images/screenshots/AdaptiveIconView-Teardrop.png)|
+| Circles | Squircles | Teardrops |
+|---------|-----------|-----------|
+| ![img](./.github/images/circle.png?raw=true) | ![img](./.github/images/squircle.png?raw=true) | ![img](./.github/images/teardrop.png?raw=true) |
 
 ## Usage
 
 ### Setup
 
-The Gradle dependency is available through jCenter, which is used by default in Android Studio. To add the dependency to your project, copy this line into the dependencies section of your build.gradle file.
+This project is published on [JitPack](https://jitpack.io/), which you can add to your project by copying the following to your root build.gradle at the end of "repositories".
 
 ```gradle
-compile 'me.jfenn:adaptiveicon:0.0.1'
+allprojects {
+  repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+  }
+}
 ```
+
+To add the dependency, copy this line into your app module's build.gradle file.
+
+```gradle
+compile 'me.jfenn:AdaptiveIconView:0.0.1'
+```
+
+##### Support Libraries
+
+The Android support libraries have been refactored from `android.support.*` to `androidx.*` as detailed [here](https://developer.android.com/topic/libraries/support-library/androidx-overview). As such, AdaptiveIconView only uses the new dependencies. If your project still uses the older support libraries for some reason, you must compile your own version of the library (either refactoring it yourself or using a version from before the change).
+
 
 ### Loading an Icon
 
